@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>北印度金三角＋恆河</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: single-column phone app. Big condensed date column on the left, city-grouped rows, four bottom tabs. */
+:root{
+  --bg:#0b121c; --surface:#131c29; --surface-2:#192335; --line:#25324a;
+  --fg:#eef2f7; --muted:#97a5b9;
+  --accent:#f4c24a; --accent-fill:#f4c24a; --on-accent:#1b1404;
+  --flight:#7fb0ff; --alert:#ff938a; --good:#6fd1a0;
+  --font-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,-apple-system,sans-serif;
+  --font-num:"Barlow Condensed","Arial Narrow","Helvetica Neue",sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f3f5f9; --surface:#ffffff; --surface-2:#eef2f7; --line:#d8e0ea;
+    --fg:#111a27; --muted:#566478;
+    --accent:#8a5800; --accent-fill:#f4c24a; --on-accent:#1b1404;
+    --flight:#1c5bc0; --alert:#bf3326; --good:#12744a;
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f3f5f9; --surface:#ffffff; --surface-2:#eef2f7; --line:#d8e0ea;
+  --fg:#111a27; --muted:#566478;
+  --accent:#8a5800; --accent-fill:#f4c24a; --on-accent:#1b1404;
+  --flight:#1c5bc0; --alert:#bf3326; --good:#12744a;
+  color-scheme:light;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--fg);
+  font:400 15px/1.55 var(--font-body);
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:20px 120px;
+  -webkit-text-size-adjust:100%;
+}
+.app{max-width:600px;margin:0 auto}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ic{width:1em;height:1em;flex:none}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px 12px;flex-wrap:wrap}
+.top h2{margin:0;font-size:20px;font-weight:500;color:var(--muted)}
+.actions{display:flex;gap:10px}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;background:transparent;border:1.5px solid var(--accent);color:var(--accent);font-weight:700;font-size:15px;line-height:1.2}
+.pill.alert{border-color:var(--alert);color:var(--alert)}
+.pill .ic{font-size:18px}
+.hero h1{margin:20px 0 8px;font-size:clamp(28px,8.4vw,38px);line-height:1.15;font-weight:700;text-wrap:balance}
+.meta{margin:0;color:var(--muted);font-size:16px}
+.countdown{margin:22px 0 0;color:var(--muted);font-size:19px}
+.countdown b{font-family:var(--font-num);font-size:46px;font-weight:700;color:var(--accent);line-height:1;margin:0 5px;vertical-align:-5px;font-variant-numeric:tabular-nums}
+
+/* groups and rows */
+.grp{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;padding:30px 4px 10px}
+.grp strong{font-size:18px;font-weight:700}
+.grp span{color:var(--muted);font-size:13px}
+.rows{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.row + .row{border-top:1px solid var(--line)}
+.head{display:grid;grid-template-columns:64px minmax(0,1fr) 18px;gap:14px;align-items:start;width:100%;padding:16px 14px;background:none;border:0;text-align:left}
+.date{font-family:var(--font-num);font-weight:700;font-size:34px;line-height:1;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.wd{display:block;margin-top:5px;font-size:13px;color:var(--muted);line-height:1.2}
+.badge{display:inline-block;margin-top:6px;padding:0 7px;border-radius:6px;background:var(--accent-fill);color:var(--on-accent);font-size:11px;font-weight:700;line-height:1.6}
+.rt{font-size:17px;font-weight:700;line-height:1.35;text-wrap:balance}
+.flight{display:flex;align-items:center;gap:6px;margin-top:5px;color:var(--flight);font-weight:700;font-size:14px;line-height:1.35}
+.flight .ic{font-size:15px}
+.term{display:block;margin-top:1px;color:var(--muted);font-weight:400;font-size:13px}
+.sum{margin-top:5px;color:var(--muted);font-size:14px;line-height:1.55}
+.chev{width:18px;height:18px;margin-top:6px;color:var(--muted);transition:transform .2s}
+.head[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.detail{padding:14px 14px 16px;background:var(--surface-2);border-top:1px solid var(--line)}
+.tl{list-style:none;margin:0;padding:0;display:grid;gap:11px}
+.tl li{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px}
+.tm{font-family:var(--font-num);font-weight:600;font-size:15px;line-height:1.55;color:var(--accent);font-variant-numeric:tabular-nums}
+.tx{min-width:0;overflow-wrap:anywhere}
+.chip{font-style:normal;display:inline-block;margin-right:6px;padding:0 7px;border-radius:6px;background:var(--accent-fill);color:var(--on-accent);font-size:11px;font-weight:700;line-height:1.6;vertical-align:1px}
+.chip.warn{background:transparent;color:var(--alert);border:1px solid var(--alert);line-height:1.45}
+.stay{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:2px 10px;font-size:14px;color:var(--muted)}
+.stay b{color:var(--fg);font-weight:500}
+.link{margin-top:12px;padding:0;background:none;border:0;color:var(--accent);font-weight:700;font-size:14px}
+
+/* daily */
+.chips{position:relative;display:flex;gap:8px;overflow-x:auto;padding:22px 0 12px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chipbtn{flex:none;min-width:58px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);text-align:center;line-height:1.2}
+.chipbtn .n{display:block;font-family:var(--font-num);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
+.chipbtn .w{display:block;font-size:12px;color:var(--muted)}
+.chipbtn[aria-pressed="true"]{background:var(--accent-fill);border-color:transparent;color:var(--on-accent)}
+.chipbtn[aria-pressed="true"] .w{color:var(--on-accent)}
+.dayhead{padding:14px 2px 4px}
+.kicker{font-family:var(--font-num);font-weight:600;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.dayhead h3{margin:2px 0 4px;font-size:22px;line-height:1.3;font-weight:700;text-wrap:balance}
+.dayhead p{margin:0;color:var(--muted);font-size:14px}
+.flightbox{margin:14px 0 4px;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;display:grid;gap:4px}
+.rail{list-style:none;margin:20px 0 0 6px;padding:0;border-left:2px solid var(--line)}
+.rail li{position:relative;padding:0 0 20px 20px}
+.rail li::before{content:"";position:absolute;left:-7px;top:7px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent)}
+.rail li.k::before{background:var(--accent)}
+.rail .t{display:block;font-family:var(--font-num);font-weight:600;font-size:15px;color:var(--accent);line-height:1.4}
+.rail .x{display:block;overflow-wrap:anywhere}
+.stepper{display:flex;justify-content:space-between;gap:10px;margin-top:6px}
+.stepper button{padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:500;font-size:14px}
+.stepper button[disabled]{opacity:.35;cursor:default}
+
+/* eat + info rows */
+.srow{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;padding:16px 14px}
+.name{font-size:17px;font-weight:700;line-height:1.35}
+.sub{color:var(--muted);font-size:13px;margin-top:1px}
+.desc{margin-top:5px;color:var(--muted);font-size:14px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{padding:0 10px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:var(--muted);line-height:1.7}
+.tag.warn{border-color:var(--alert);color:var(--alert)}
+.tag.hot{border-color:var(--accent);color:var(--accent)}
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:6px 16px;padding:13px 14px;flex-wrap:wrap}
+.kv > span:first-child{color:var(--muted);font-size:14px}
+.kv > b{font-weight:500;text-align:right;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;margin-left:auto}
+.amt{font-family:var(--font-num);font-size:16px;font-weight:600;color:var(--fg);font-variant-numeric:tabular-nums}
+.note{margin:10px 4px 0;color:var(--muted);font-size:13px}
+
+/* tab bar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);
+  padding:8px max(16px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))}
+.tabs{max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.tabs button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;background:none;border:0;color:var(--muted);font-size:12px;font-weight:500}
+.tabs svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tabs button[aria-current="page"]{color:var(--accent);font-weight:700}
+
+/* sheets */
+.scrim{position:fixed;inset:0;z-index:40;background:rgba(5,9,15,.62);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:600px;max-height:88%;overflow-y:auto;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-bottom:0;border-radius:18px 18px 0 0;
+  padding:18px max(18px, env(safe-area-inset-right, 0px)) calc(22px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px))}
+.sheet h3{margin:0 0 4px;font-size:20px}
+.sheet .lead{margin:0 0 12px;color:var(--muted);font-size:14px}
+.num-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.num-row .lb{flex:1;min-width:0}
+.num-row .lb small{display:block;color:var(--muted);font-size:12px}
+.num-row .num{font-family:var(--font-num);font-weight:700;font-size:24px;color:var(--alert);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.mini{padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);font-size:13px}
+.close{width:100%;margin-top:14px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);font-weight:700}
+.steps{margin:0;padding-left:20px;display:grid;gap:8px;font-size:15px}
+
+@media (prefers-reduced-motion: reduce){.chev{transition:none}}
+</style>
+<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+
+<div class="app">
+  <div class="top">
+    <h2 id="tabtitle">行程總覽</h2>
+    <div class="actions">
+      <button class="pill" type="button" data-open="sheet-home">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        加到主畫面
+      </button>
+      <button class="pill alert" type="button" data-open="sheet-emg">緊急</button>
+    </div>
+  </div>
+
+  <main>
+    <section id="tab-overview">
+      <div class="hero">
+        <h1>北印度金三角＋恆河</h1>
+        <p class="meta">2026/11/04（三）– 11/14（六）　7＋2 人</p>
+        <p class="meta">德里・齋浦爾・阿格拉・瓦拉納西・古爾岡</p>
+        <p class="countdown" id="cd"></p>
+      </div>
+      <div id="overview"></div>
+    </section>
+    <section id="tab-daily" hidden></section>
+    <section id="tab-eat" hidden></section>
+    <section id="tab-info" hidden></section>
+  </main>
+</div>
+
+<nav class="tabbar" aria-label="主選單">
+  <div class="tabs">
+    <button type="button" data-tab="overview" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>行程</button>
+    <button type="button" data-tab="daily">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>每日</button>
+    <button type="button" data-tab="eat">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v8M4.5 3v5a2.5 2.5 0 0 0 5 0V3M7 11v10M17 21V3c-2.2 1.2-3.5 4-3.5 7 0 2 1 3 3.5 3"/></svg>餐廳</button>
+    <button type="button" data-tab="info">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8v.01"/></svg>資訊</button>
+  </div>
+</nav>
+
+<div class="scrim" id="sheet-emg" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="emg-h">
+    <h3 id="emg-h">緊急聯絡</h3>
+    <p class="lead">在印度境內撥打。號碼可複製後貼到撥號畫面。</p>
+    <div class="num-row"><div class="lb">統一緊急電話<small>警察、消防、救護都可撥</small></div><span class="num">112</span><button class="mini" type="button" data-copy="112">複製</button></div>
+    <div class="num-row"><div class="lb">警察</div><span class="num">100</span><button class="mini" type="button" data-copy="100">複製</button></div>
+    <div class="num-row"><div class="lb">救護車</div><span class="num">102</span><button class="mini" type="button" data-copy="102">複製</button></div>
+    <div class="num-row"><div class="lb">印度觀光客服務專線<small>24 小時</small></div><span class="num">1363</span><button class="mini" type="button" data-copy="1363">複製</button></div>
+    <div class="num-row"><div class="lb">外交部旅外國人急難救助<small>從國外撥打的免付費專線</small></div><span class="num" style="font-size:19px">+886-800-085-095</span><button class="mini" type="button" data-copy="+886-800-085-095">複製</button></div>
+    <button class="close" type="button" data-close>關閉</button>
+  </div>
+</div>
+
+<div class="scrim" id="sheet-home" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="home-h">
+    <h3 id="home-h">加到手機主畫面</h3>
+    <p class="lead">先用手機瀏覽器開啟這個頁面的連結，再從瀏覽器選單加入。</p>
+    <ol class="steps">
+      <li>iPhone（Safari）：點下方「分享」，選「加入主畫面」。</li>
+      <li>Android（Chrome）：點右上角「⋮」，選「加到主畫面」。</li>
+    </ol>
+    <button class="close" type="button" data-close>關閉</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var START = new Date(2026,10,4), END = new Date(2026,10,14);
+  var WD = ["週日","週一","週二","週三","週四","週五","週六"];
+
+  var PLANE = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z" fill="currentColor"/></svg>';
+  var CHEV = '<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  var DAYS = [
+    { city:"去程", title:"台北飛曼谷",
+      sum:"22:30 從台北起飛，11/5 凌晨 01:35 抵達曼谷轉機。",
+      flights:[{no:"CI837", route:"TPE → BKK", time:"22:30–01:35 (+1)", term:"桃園第一航廈 T1 出發"}],
+      items:[
+        {t:"22:30", x:"CI837 台北 TPE → 曼谷 BKK 起飛，從桃園第一航廈（T1）出發"},
+        {t:"01:35", x:"11/5 凌晨抵達曼谷，在機場轉機，約 5 小時 25 分後搭 TG323 飛德里"}] },
+    { city:"德里", title:"經曼谷飛德里，入住 Aerocity",
+      sum:"清晨從曼谷起飛，09:55 抵達德里，Naresh 接機入住 Aerocity。",
+      flights:[{no:"TG323", route:"BKK → DEL", time:"07:00–09:55", term:"德里 T3 抵達"}],
+      items:[
+        {t:"07:00", x:"TG323 曼谷 BKK → 德里 DEL 起飛"},
+        {t:"09:55", x:"抵達德里機場 DEL（T3），與司機 Naresh 會合"},
+        {key:1, x:"向包車公司兌換 USD 700 的印度盧比（指定 500、100 面額），作為公積金"},
+        {x:"專車前往 Aerocity，距機場約 10 分鐘，洗澡休息"},
+        {t:"傍晚", x:"步行到 Worldmark 超市，採買飲用水與長途車程的零食"}],
+      hotel:"Aloft by Marriott New Delhi Aerocity", meal:"含早餐" },
+    { city:"德里", title:"舊德里嘟嘟車・胡馬雍陵・古達明納塔",
+      sum:"古蹟、舊城與印度門，回 Aerocity 前順路採買補給。",
+      items:[
+        {x:"古達明納塔 Qutub Minar：73 公尺高的紅砂岩勝利塔，離 Aerocity 約 30 分鐘，拍第一張團體大合照"},
+        {x:"胡馬雍陵 Humayun's Tomb：泰姬瑪哈陵的靈感來源"},
+        {t:"午餐", x:"可汗市場 Khan Market，街道乾淨，餐廳衛生有保障"},
+        {x:"賈瑪清真寺 Jama Masjid：印度最大的清真寺，紅砂岩階梯很有氣勢"},
+        {x:"月光集市 Chandni Chowk：包 4 台嘟嘟車或人力車（兩人一台）穿梭舊城巷弄。排燈節前一天人潮極多，不建議步行"},
+        {t:"傍晚", x:"印度門 India Gate：散步看排燈節燈飾"},
+        {t:"晚餐", x:"Gulati Restaurant, Pandara Road（奶油雞）"},
+        {x:"回 Aerocity 途中到 Smart Bazaar 採買公路旅行的零食與飲用水"}],
+      hotel:"Aloft by Marriott New Delhi Aerocity", meal:"含早餐" },
+    { city:"齋浦爾", title:"德里 → 齋浦爾・城市宮殿・天文台",
+      sum:"高速公路約 4–5 小時，下午逛城市宮殿、天文台與風之宮殿。",
+      items:[
+        {x:"包車走高速公路到齋浦爾，約 4–5 小時，中間停休息站"},
+        {x:"城市宮殿 City Palace"},
+        {x:"簡塔曼塔天文台 Jantar Mantar"},
+        {x:"風之宮殿 Hawa Mahal（進入內部參觀）"},
+        {t:"傍晚", x:"粉紅之城 Pink City 徒步約半小時，感受小排燈節點燈"}],
+      hotel:"Hilton Jaipur", meal:"含早餐與行政酒廊" },
+    { city:"齋浦爾", title:"琥珀堡・水上宮殿・排燈節之夜",
+      sum:"旺季提早出發，白天看古堡，晚上坐嘟嘟車逛燈海。",
+      items:[
+        {t:"早上", x:"提早出發避開人潮：琥珀堡 Amber Fort"},
+        {x:"階梯井 Panna Meena ka Kund"},
+        {x:"水上宮殿 Jal Mahal"},
+        {x:"皇家陵墓 Royal Gaitore"},
+        {x:"手工木刻印花布市場 Hand Block Market"},
+        {x:"午餐後回飯店休息"},
+        {t:"13:45", x:"Charlie 夫婦搭 BKK → JAI（05:35–13:45）抵達齋浦爾，全團 9 人"},
+        {key:1, x:"把包車尾款 USD 1,295 現金交給 Naresh"},
+        {t:"18:00–18:30", x:"Naresh 開嘟嘟車到飯店接送，夜遊粉紅之城，看排燈節燈飾"},
+        {warn:1, t:"19:30", x:"Nebulae 頂樓酒吧訂位，看全城煙火（考慮取消中）"}],
+      hotel:"Hilton Jaipur", meal:"含早餐與行政酒廊" },
+    { city:"阿格拉", title:"齋浦爾 → 阿格拉・月亮井",
+      sum:"約 4.5 小時車程，中途停月亮井，晚上吃 Pinch of Spice。",
+      items:[
+        {t:"上午", x:"睡到自然醒，退房出發，車程約 4.5 小時"},
+        {x:"中途停月亮井 Chand Baori，地下幾何階梯井"},
+        {t:"傍晚", x:"入住飯店，洗去一身塵土"},
+        {x:"順路到 Kala Kendra 租莎麗（已預約）"},
+        {t:"晚餐", x:"Pinch of Spice"}],
+      hotel:"DoubleTree by Hilton Agra", meal:"早餐 INR 1,003／人" },
+    { city:"阿格拉", title:"泰姬陵日出・搶假・阿格拉堡",
+      sum:"凌晨看泰姬陵日出，早餐後 09:30 搶 A10A 假。",
+      items:[
+        {t:"05:00", x:"Kala Kendra Saree Rental 租莎麗，已預約，05:00 要到"},
+        {t:"05:30", x:"出發看泰姬瑪哈陵日出"},
+        {t:"08:30", x:"回飯店吃早餐"},
+        {key:1, t:"09:30", x:"用飯店穩定的 Wi-Fi 準時搶預排 A10A 假"},
+        {t:"下午", x:"阿格拉堡 Agra Fort"}],
+      hotel:"DoubleTree by Hilton Agra", meal:"早餐 INR 1,003／人" },
+    { city:"瓦拉納西", title:"阿格拉 → 德里 → 瓦拉納西",
+      sum:"早上走亞穆納高速公路回德里機場，搭國內線飛瓦拉納西。",
+      flights:[{no:"6E2423", route:"DEL → VNS", time:"15:15–16:40", term:"德里 T2 出發"}],
+      items:[
+        {t:"上午", x:"退房，小巴走亞穆納高速公路回德里機場 T2，約 3.5 小時"},
+        {t:"15:15", x:"6E2423 DEL → VNS，16:40 抵達"},
+        {x:"直接到飯店入住，先休息恢復體力"},
+        {t:"晚餐", x:"JHV Mall，或 Tadka Restaurant at Ramada Plaza by Wyndham JHV Varanasi"}],
+      hotel:"DoubleTree by Hilton Varanasi" },
+    { city:"瓦拉納西", title:"恆河日出・鹿野苑・恆河夜祭",
+      sum:"從恆河的日出看到夜祭，下午到鹿野苑沉澱心靈。",
+      items:[
+        {t:"清晨", x:"包船看恆河日出與信徒沐浴"},
+        {t:"白天", x:"探索迷宮般的舊城區"},
+        {t:"下午", x:"鹿野苑 Sarnath：佛教聖地，離飯店很近"},
+        {t:"傍晚", x:"恆河畔看恆河夜祭 Ganga Aarti"}],
+      hotel:"DoubleTree by Hilton Varanasi" },
+    { city:"古爾岡", title:"瓦拉納西 → 古爾岡・慶功晚餐",
+      sum:"飛回德里，直接住進古爾岡，樓下就是慶功餐廳。",
+      flights:[{no:"AI2568", route:"VNS → DEL", time:"16:30–18:10", term:"德里 T3 抵達"}],
+      items:[
+        {t:"16:30", x:"AI2568 VNS → DEL，18:10 抵達德里 T3"},
+        {x:"專車從德里機場 T3 送到古爾岡 Gurugram"},
+        {t:"晚上", x:"在飯店樓下的 Baani Square 或 Cyber Hub 慶功"},
+        {x:"到大型連鎖超市（如 Smart Bazaar）一次掃齊伴手禮"}],
+      hotel:"DoubleTree by Hilton Gurugram Baani Square" },
+    { city:"古爾岡", title:"回程：6 位經曼谷返台，3 位飛東京",
+      sum:"凌晨退房，03:30 與 04:35 兩班先後從德里起飛。",
+      flights:[
+        {no:"TG332", route:"DEL → BKK（6 位）", time:"03:30–09:00", term:"德里 T3 出發"},
+        {no:"JL740", route:"DEL → 東京成田 NRT（3 位）", time:"04:35–15:40", term:"德里 T3 出發・成田 T2 抵達"}],
+      items:[
+        {t:"凌晨", x:"退房，專車送往德里機場 T3"},
+        {t:"03:30", x:"6 位搭 TG332 德里 DEL → 曼谷 BKK，09:00 抵達"},
+        {t:"04:35", x:"Bevis、許yu、阿魁 3 位搭 JL740 德里 DEL → 東京成田 NRT，15:40 抵達成田第二航廈（T2）"},
+        {warn:1, t:"09:00", x:"6 位在曼谷轉機，曼谷 → 台北班機尚未決定，可選班機如下（轉機時間以 09:00 抵達計算）"},
+        {t:"12:40", x:"TG634　12:40–17:20　轉機 3 小時 40 分　桃園 T1 抵達（參考）"},
+        {t:"12:45", x:"BR212　12:45–17:15　轉機 3 小時 45 分　桃園 T2 抵達（參考）"},
+        {t:"14:05", x:"CI832　14:05–18:40　轉機 5 小時 5 分　桃園 T1 抵達（參考）"},
+        {t:"14:35", x:"BR203　14:35–19:15　轉機 5 小時 35 分　桃園 T2 抵達（參考）"},
+        {t:"17:15", x:"BR68　17:15–21:50　轉機 8 小時 15 分　桃園 T2 抵達（參考）"},
+        {t:"17:30", x:"TG636　17:30–22:20　轉機 8 小時 30 分　桃園 T1 抵達（參考）"},
+        {t:"17:50", x:"CI836　17:50–22:25　轉機 8 小時 50 分　桃園 T1 抵達（參考）"},
+        {t:"11/15", x:"CI838　02:35–07:15　隔天凌晨起飛，轉機 17 小時 35 分　桃園 T1 抵達（參考）"}] }
+  ];
+
+  var GROUPS = [
+    {name:"去程 Departure", meta:"11/4・台北出發", days:[0]},
+    {name:"Delhi 德里", meta:"11/5–11/7・2 晚・Aloft Aerocity", days:[1,2]},
+    {name:"Jaipur 齋浦爾", meta:"11/7–11/9・2 晚・Hilton Jaipur", days:[3,4]},
+    {name:"Agra 阿格拉", meta:"11/9–11/11・2 晚・DoubleTree Agra", days:[5,6]},
+    {name:"Varanasi 瓦拉納西", meta:"11/11–11/13・2 晚・DoubleTree Varanasi", days:[7,8]},
+    {name:"Gurugram 古爾岡", meta:"11/13–11/14・1 晚・DoubleTree Baani Square", days:[9,10]}
+  ];
+
+  function dateOf(i){ return new Date(2026,10,4+i); }
+  function dStr(i){ var d=dateOf(i); return (d.getMonth()+1)+"/"+d.getDate(); }
+  function wdOf(i){ return WD[dateOf(i).getDay()]; }
+
+  var now = new Date();
+  var today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var diff = Math.round((START - today0)/864e5);
+  var todayIdx = (today0 >= START && today0 <= END) ? Math.round((today0-START)/864e5) : -1;
+
+  var cd = document.getElementById("cd");
+  if (diff > 0) cd.innerHTML = "距離出發還有<b>"+diff+"</b>天";
+  else if (diff === 0) cd.innerHTML = "今天出發，一路順風";
+  else if (todayIdx >= 0) cd.innerHTML = "旅程進行中，第<b>"+(-diff)+"</b>天";
+  else cd.textContent = "旅程已結束，平安回家";
+
+  function flightsHTML(d){
+    return (d.flights||[]).map(function(f){
+      return '<div class="flight">'+PLANE+'<span>'+f.no+'　'+f.route+(f.time?'　'+f.time:'')+(f.term?'<span class="term">'+f.term+'</span>':'')+'</span></div>';
+    }).join("");
+  }
+  function itemsHTML(items){
+    return '<ul class="tl">'+items.map(function(it){
+      return '<li><span class="tm">'+(it.t||"·")+'</span><span class="tx">'+
+        (it.key?'<em class="chip">重要</em>':'')+(it.warn?'<em class="chip warn">待決定</em>':'')+it.x+'</span></li>';
+    }).join("")+'</ul>';
+  }
+  function stayHTML(d){
+    if(!d.hotel) return "";
+    return '<div class="stay"><span>住宿</span><b>'+d.hotel+'</b>'+(d.meal?'<span>'+d.meal+'</span>':'')+'</div>';
+  }
+
+  /* overview */
+  var open = {};
+  function renderOverview(){
+    var html = GROUPS.map(function(g){
+      var rows = g.days.map(function(i){
+        var d = DAYS[i], exp = !!open[i];
+        return '<div class="row">'+
+          '<button class="head" type="button" data-toggle="'+i+'" aria-expanded="'+exp+'">'+
+            '<div><div class="date">'+dStr(i)+'</div><span class="wd">'+wdOf(i)+'</span>'+(i===todayIdx?'<span class="badge">今天</span>':'')+'</div>'+
+            '<div><div class="rt">'+d.title+'</div>'+flightsHTML(d)+'<div class="sum">'+d.sum+'</div></div>'+
+            CHEV+
+          '</button>'+
+          (exp?'<div class="detail">'+itemsHTML(d.items)+stayHTML(d)+'<button class="link" type="button" data-goday="'+i+'">在「每日」查看這天</button></div>':'')+
+        '</div>';
+      }).join("");
+      return '<div class="grp"><strong>'+g.name+'</strong><span>'+g.meta+'</span></div><div class="rows">'+rows+'</div>';
+    }).join("");
+    document.getElementById("overview").innerHTML = html;
+  }
+
+  /* daily */
+  var sel = todayIdx >= 0 ? todayIdx : 0;
+  function renderDaily(){
+    var el = document.getElementById("tab-daily");
+    var chips = DAYS.map(function(_,i){
+      return '<button class="chipbtn" type="button" data-day="'+i+'" aria-pressed="'+(i===sel)+'"><span class="n">'+dStr(i)+'</span><span class="w">'+wdOf(i)+'</span></button>';
+    }).join("");
+    var d = DAYS[sel];
+    var fl = (d.flights&&d.flights.length)?'<div class="flightbox">'+flightsHTML(d)+'</div>':"";
+    var rail = '<ol class="rail">'+d.items.map(function(it){
+      return '<li class="'+((it.key||it.warn)?'k':'')+'">'+(it.t?'<span class="t">'+it.t+'</span>':'')+
+        '<span class="x">'+(it.key?'<em class="chip">重要</em>':'')+(it.warn?'<em class="chip warn">待決定</em>':'')+it.x+'</span></li>';
+    }).join("")+'</ol>';
+    el.innerHTML =
+      '<div class="chips" id="chips">'+chips+'</div>'+
+      '<div class="dayhead"><div class="kicker">'+(sel===0?"出發日":"Day "+sel)+'・'+dStr(sel)+'　'+wdOf(sel)+'</div>'+
+      '<h3>'+d.title+'</h3><p>'+d.city+(d.hotel?'　住宿：'+d.hotel:'')+'</p></div>'+
+      fl+rail+
+      '<div class="stepper"><button type="button" data-step="-1"'+(sel===0?' disabled':'')+'>← 前一天</button>'+
+      '<button type="button" data-step="1"'+(sel===DAYS.length-1?' disabled':'')+'>後一天 →</button></div>';
+    var box = document.getElementById("chips"), cur = box.children[sel];
+    if (cur) box.scrollLeft = cur.offsetLeft - (box.clientWidth - cur.offsetWidth)/2;
+  }
+
+  /* eat */
+  var EAT = [
+    {g:"Delhi 德里", m:"11/5–11/7", rows:[
+      {date:"11/6", name:"Khan Market 可汗市場", sub:"午餐", desc:"德里最受外國駐印人士歡迎的商圈，街道乾淨，現代印度料理餐廳衛生有保障。第一餐安心吃奶油雞與烤餅。", tags:["午餐"]},
+      {date:"11/6", name:"Gulati Restaurant", sub:"Pandara Road", desc:"奶油雞。", tags:["晚餐"]}]},
+    {g:"Jaipur 齋浦爾", m:"11/7–11/9", rows:[
+      {date:"11/8", name:"Nebulae", sub:"Hilton Jaipur 頂樓酒吧", desc:"訂位 19:30，居高臨下看全城排燈節煙火，看完直接搭電梯回房。目前考慮取消。", tags:["晚餐","19:30"], warn:"考慮取消中"}]},
+    {g:"Agra 阿格拉", m:"11/9–11/11", rows:[
+      {date:"11/9", name:"Pinch of Spice", sub:"高級連鎖餐廳", desc:"冷氣強、環境乾淨、服務好。必點奶油雞 Butter Chicken、窯烤羊肉串 Mutton Seekh Kabab、大蒜烤餅 Garlic Naan。", tags:["晚餐"]}]},
+    {g:"Varanasi 瓦拉納西", m:"11/11–11/13", rows:[
+      {date:"11/11", name:"JHV Mall 或 Tadka Restaurant", sub:"Ramada Plaza by Wyndham JHV Varanasi", desc:"抵達後不用走遠，在商場或周邊餐廳隨意吃。", tags:["晚餐"]}]},
+    {g:"Gurugram 古爾岡", m:"11/13–11/14", rows:[
+      {date:"11/13", name:"Baani Square／Cyber Hub", sub:"飯店樓下", desc:"各國料理與精釀啤酒，舉辦 9 人團慶功大餐。", tags:["晚餐","慶功"]}]},
+    {g:"超市採買", m:"水、零食、伴手禮", rows:[
+      {date:"11/5", name:"Worldmark 超市", sub:"Aerocity", desc:"傍晚步行過去，買水和長途車程的零食。", tags:["採買"]},
+      {date:"11/6", name:"Smart Bazaar", sub:"印度最大連鎖超市", desc:"回 Aerocity 途中採買。", tags:["採買"]},
+      {date:"11/13", name:"Smart Bazaar", sub:"古爾岡附近", desc:"把伴手禮一次掃齊。", tags:["伴手禮"]}]}
+  ];
+  function renderEat(){
+    document.getElementById("tab-eat").innerHTML = EAT.map(function(g){
+      return '<div class="grp"><strong>'+g.g+'</strong><span>'+g.m+'</span></div><div class="rows">'+
+        g.rows.map(function(r){
+          return '<div class="row srow"><div class="date">'+r.date+'</div><div><div class="name">'+r.name+'</div><div class="sub">'+r.sub+'</div><div class="desc">'+r.desc+'</div>'+
+            '<div class="tags">'+r.tags.map(function(t){return '<span class="tag hot">'+t+'</span>';}).join("")+(r.warn?'<span class="tag warn">'+r.warn+'</span>':'')+'</div></div></div>';
+        }).join("")+'</div>';
+    }).join("");
+  }
+
+  /* info */
+  function kv(a,b){ return '<div class="row kv"><span>'+a+'</span><b>'+b+'</b></div>'; }
+  function renderInfo(){
+    var flights = [
+      ["11/4","CI837","台北 TPE → 曼谷 BKK　22:30–01:35 (+1)<br>桃園第一航廈 T1 出發"],
+      ["11/5","TG323","曼谷 BKK → 德里 DEL　07:00–09:55<br>德里 T3 抵達"],
+      ["11/8","BKK → JAI","Charlie 夫婦 05:35–13:45"],
+      ["11/11","6E2423","德里 DEL → 瓦拉納西 VNS　15:15–16:40<br>德里 T2 出發"],
+      ["11/13","AI2568","瓦拉納西 VNS → 德里 DEL　16:30–18:10<br>德里 T3 抵達"],
+      ["11/14","TG332","德里 DEL → 曼谷 BKK　03:30–09:00（6 位）<br>德里 T3 出發"],
+      ["11/14","JL740","德里 DEL → 東京成田 NRT　04:35–15:40（Bevis、許yu、阿魁）<br>德里 T3 出發・成田 T2 抵達"],
+      ["11/14","曼谷 → 台北","6 位，班機尚未決定，可選：<br>TG634 12:40–17:20（桃園 T1・參考）<br>BR212 12:45–17:15（桃園 T2・參考）<br>CI832 14:05–18:40（桃園 T1・參考）<br>BR203 14:35–19:15（桃園 T2・參考）<br>BR68 17:15–21:50（桃園 T2・參考）<br>TG636 17:30–22:20（桃園 T1・參考）<br>CI836 17:50–22:25（桃園 T1・參考）<br>11/15 CI838 02:35–07:15（桃園 T1・參考）"]
+    ];
+    var hotels = [
+      ["11/5","Aloft by Marriott New Delhi Aerocity","德里・2 晚・含早餐","₹102,748.50"],
+      ["11/7","Hilton Jaipur","齋浦爾・2 晚・含早餐與行政酒廊","₹123,658.41"],
+      ["11/9","DoubleTree by Hilton Agra","阿格拉・2 晚・早餐 INR 1,003／人","₹69,844.20"],
+      ["11/11","DoubleTree by Hilton Varanasi","瓦拉納西・2 晚","₹109,917.00"],
+      ["11/13","DoubleTree by Hilton Gurugram Baani Square","古爾岡・1 晚","₹23,892.36"]
+    ];
+    var h = '';
+    h += '<div class="grp"><strong>出發前要準備</strong></div><div class="rows">'+
+      kv("美金現鈔・包車尾款","全程 7 位 $160／人<br>Charlie 夫婦 $175／兩人")+
+      kv("美金現鈔・公積金","$700，抵達機場兌換盧比<br>（指定 500、100 面額）")+
+      kv("11/8 付尾款","USD 1,295 現金交給 Naresh")+
+      kv("11/10 重點","05:00 租莎麗<br>09:30 用 Wi-Fi 搶 A10A 假")+
+    '</div>';
+    h += '<div class="grp"><strong>航班</strong></div><div class="rows">'+flights.map(function(f){
+      return '<div class="row srow"><div class="date">'+f[0]+'</div><div><div class="name">'+f[1]+'</div><div class="sub">'+f[2]+'</div></div></div>';
+    }).join("")+'</div>';
+    h += '<p class="note">航廈依機場與航空公司公告整理，航廈會調整，出發前一天請用航空公司 App 再確認。曼谷到台北的桃園抵達航廈為參考，選定班機後再核對。</p>';
+    h += '<div class="grp"><strong>機票費用</strong><span>ZED 票</span></div><div class="rows">'+
+      kv("台北 → 曼谷（11/4 CI837）","<span class=\"amt\">NT$2,079</span>")+
+      kv("曼谷 → 德里（11/5 TG323）","<span class=\"amt\">NT$4,544</span>")+
+      kv("曼谷 → 台北（班機待定）","<span class=\"amt\">NT$2,410</span>")+
+    '</div>';
+    h += '<div class="grp"><strong>保險</strong><span>Elma</span></div><div class="rows">'+
+      kv("Elma 的保險（新安東京）","<span class=\"amt\">NT$1,595</span>")+
+    '</div>';
+    h += '<div class="grp"><strong>住宿</strong><span>10 天 9 夜</span></div><div class="rows">'+hotels.map(function(x){
+      return '<div class="row srow"><div class="date">'+x[0]+'</div><div><div class="name" style="font-size:16px">'+x[1]+'</div><div class="sub">'+x[2]+'</div><div class="amt" style="margin-top:4px">'+x[3]+'</div></div></div>';
+    }).join("")+'</div><p class="note">住宿金額為 7 人配置的房費，日期為入住日。</p>';
+    h += '<div class="grp"><strong>包車</strong><span>Naresh Tours</span></div><div class="rows">'+
+      kv("車型","12 人座 Tempo Traveller")+
+      kv("天數","10 天（11/5–11/14）")+
+      kv("總包車費","USD 1,855")+
+      kv("訂金（已結清）","全程 7 位 NT$2,337／人<br>Charlie 夫婦 NT$2,515／兩人")+
+      kv("尾款（現場付美金）","全程 7 位 $160／人<br>Charlie 夫婦 $175／兩人<br>合計 USD 1,295")+
+    '</div>';
+    h += '<div class="grp"><strong>住宿費用</strong><span>預估匯率 1 INR ≈ 0.38 TWD</span></div><div class="rows">'+
+      kv("總花費（7 人）","₹430,060.47<br>約 NT$163,423")+
+      kv("每人均攤","約 ₹61,437<br>約 NT$23,346")+
+    '</div><p class="note">實際扣款依信用卡請款日的匯率為準。</p>';
+    document.getElementById("tab-info").innerHTML = h;
+  }
+
+  /* tabs */
+  var TITLES = {overview:"行程總覽", daily:"每日行程", eat:"餐廳與採買", info:"行程資訊"};
+  var current = "";
+  function show(name){
+    if(!TITLES[name]) name = "overview";
+    if(name === current) return;
+    current = name;
+    Object.keys(TITLES).forEach(function(k){
+      document.getElementById("tab-"+k).hidden = (k !== name);
+    });
+    document.querySelectorAll(".tabs button").forEach(function(b){
+      if(b.dataset.tab === name) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current");
+    });
+    document.getElementById("tabtitle").textContent = TITLES[name];
+    if(name === "daily") renderDaily();
+    window.scrollTo(0,0);
+  }
+  function go(name){
+    try{ if(location.hash !== "#"+name) location.hash = name; }catch(e){}
+    show(name);
+  }
+  window.addEventListener("hashchange", function(){ show(location.hash.slice(1)); });
+
+  /* sheets and copy */
+  var lastFocus = null;
+  function openSheet(id){ var s=document.getElementById(id); lastFocus=document.activeElement; s.hidden=false; var c=s.querySelector(".close"); if(c) c.focus(); }
+  function closeSheets(){ document.querySelectorAll(".scrim").forEach(function(s){ s.hidden=true; }); if(lastFocus && lastFocus.focus) lastFocus.focus(); }
+  function copy(txt, btn){
+    function done(){ btn.textContent="已複製"; setTimeout(function(){ btn.textContent="複製"; },1500); }
+    function fallback(){
+      try{
+        var el = btn.previousElementSibling, rg = document.createRange();
+        rg.selectNodeContents(el);
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(rg);
+        btn.textContent = "已選取";
+      }catch(e){}
+    }
+    try{ navigator.clipboard.writeText(txt).then(done, fallback); }catch(e){ fallback(); }
+  }
+
+  document.addEventListener("click", function(e){
+    var t = e.target.closest("button, .scrim");
+    if(!t) return;
+    if(t.classList.contains("scrim")){ if(e.target === t) closeSheets(); return; }
+    var d = t.dataset;
+    if(d.tab){ go(d.tab); }
+    else if(d.toggle !== undefined){ var i=+d.toggle; open[i]=!open[i]; renderOverview(); }
+    else if(d.goday !== undefined){ sel=+d.goday; current=""; go("daily"); renderDaily(); }
+    else if(d.day !== undefined){ sel=+d.day; renderDaily(); }
+    else if(d.step !== undefined){ sel=Math.max(0,Math.min(DAYS.length-1, sel+(+d.step))); renderDaily(); window.scrollTo(0,0); }
+    else if(d.open){ openSheet(d.open); }
+    else if(d.copy !== undefined){ copy(d.copy, t); }
+    else if(t.hasAttribute("data-close")){ closeSheets(); }
+  });
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape") closeSheets(); });
+
+  renderOverview(); renderEat(); renderInfo();
+  show(location.hash.slice(1));
+})();
+</script>
+
+</body>
+</html>

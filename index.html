@@ -74,6 +74,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .rt{font-size:17px;font-weight:700;line-height:1.35;text-wrap:balance}
 .flight{display:flex;align-items:center;gap:6px;margin-top:5px;color:var(--flight);font-weight:700;font-size:14px;line-height:1.35}
 .flight .ic{font-size:15px}
+.term{display:block;margin-top:1px;color:var(--muted);font-weight:400;font-size:13px}
 .sum{margin-top:5px;color:var(--muted);font-size:14px;line-height:1.55}
 .chev{width:18px;height:18px;margin-top:6px;color:var(--muted);transition:transform .2s}
 .head[aria-expanded="true"] .chev{transform:rotate(90deg)}
@@ -232,16 +233,16 @@ button{font:inherit;color:inherit;cursor:pointer}
   var DAYS = [
     { city:"去程", title:"台北飛曼谷",
       sum:"22:30 從台北起飛，11/5 凌晨 01:35 抵達曼谷轉機。",
-      flights:[{no:"CI837", route:"TPE → BKK", time:"22:30–01:35 (+1)"}],
+      flights:[{no:"CI837", route:"TPE → BKK", time:"22:30–01:35 (+1)", term:"桃園第一航廈 T1 出發"}],
       items:[
-        {t:"22:30", x:"CI837 台北 TPE → 曼谷 BKK 起飛"},
+        {t:"22:30", x:"CI837 台北 TPE → 曼谷 BKK 起飛，從桃園第一航廈（T1）出發"},
         {t:"01:35", x:"11/5 凌晨抵達曼谷，在機場轉機，約 5 小時 25 分後搭 TG323 飛德里"}] },
     { city:"德里", title:"經曼谷飛德里，入住 Aerocity",
       sum:"清晨從曼谷起飛，09:55 抵達德里，Naresh 接機入住 Aerocity。",
-      flights:[{no:"TG323", route:"BKK → DEL", time:"07:00–09:55"}],
+      flights:[{no:"TG323", route:"BKK → DEL", time:"07:00–09:55", term:"德里 T3 抵達"}],
       items:[
         {t:"07:00", x:"TG323 曼谷 BKK → 德里 DEL 起飛"},
-        {t:"09:55", x:"抵達德里機場 DEL，與司機 Naresh 會合"},
+        {t:"09:55", x:"抵達德里機場 DEL（T3），與司機 Naresh 會合"},
         {key:1, x:"向包車公司兌換 USD 700 的印度盧比（指定 500、100 面額），作為公積金"},
         {x:"專車前往 Aerocity，距機場約 10 分鐘，洗澡休息"},
         {t:"傍晚", x:"步行到 Worldmark 超市，採買飲用水與長途車程的零食"}],
@@ -301,9 +302,9 @@ button{font:inherit;color:inherit;cursor:pointer}
       hotel:"DoubleTree by Hilton Agra", meal:"早餐 INR 1,003／人" },
     { city:"瓦拉納西", title:"阿格拉 → 德里 → 瓦拉納西",
       sum:"早上走亞穆納高速公路回德里機場，搭國內線飛瓦拉納西。",
-      flights:[{no:"6E2423", route:"DEL → VNS", time:"15:15–16:40"}],
+      flights:[{no:"6E2423", route:"DEL → VNS", time:"15:15–16:40", term:"德里 T2 出發"}],
       items:[
-        {t:"上午", x:"退房，小巴走亞穆納高速公路回德里機場，約 3.5 小時"},
+        {t:"上午", x:"退房，小巴走亞穆納高速公路回德里機場 T2，約 3.5 小時"},
         {t:"15:15", x:"6E2423 DEL → VNS，16:40 抵達"},
         {x:"直接到飯店入住，先休息恢復體力"},
         {t:"晚餐", x:"JHV Mall，或 Tadka Restaurant at Ramada Plaza by Wyndham JHV Varanasi"}],
@@ -318,16 +319,31 @@ button{font:inherit;color:inherit;cursor:pointer}
       hotel:"DoubleTree by Hilton Varanasi" },
     { city:"古爾岡", title:"瓦拉納西 → 古爾岡・慶功晚餐",
       sum:"飛回德里，直接住進古爾岡，樓下就是慶功餐廳。",
-      flights:[{no:"AI2568", route:"VNS → DEL", time:"16:30–18:10"}],
+      flights:[{no:"AI2568", route:"VNS → DEL", time:"16:30–18:10", term:"德里 T3 抵達"}],
       items:[
-        {t:"16:30", x:"AI2568 VNS → DEL，18:10 抵達"},
-        {x:"專車從機場送到古爾岡 Gurugram"},
+        {t:"16:30", x:"AI2568 VNS → DEL，18:10 抵達德里 T3"},
+        {x:"專車從德里機場 T3 送到古爾岡 Gurugram"},
         {t:"晚上", x:"在飯店樓下的 Baani Square 或 Cyber Hub 慶功"},
         {x:"到大型連鎖超市（如 Smart Bazaar）一次掃齊伴手禮"}],
       hotel:"DoubleTree by Hilton Gurugram Baani Square" },
-    { city:"古爾岡", title:"帶著回憶平安返家",
-      sum:"退房，專車送德里機場。",
-      items:[{x:"退房，專車送往德里機場"},{x:"回程航班資訊尚未填入"}] }
+    { city:"古爾岡", title:"回程：6 位經曼谷返台，3 位飛東京",
+      sum:"凌晨退房，03:30 與 04:35 兩班先後從德里起飛。",
+      flights:[
+        {no:"TG332", route:"DEL → BKK（6 位）", time:"03:30–09:00", term:"德里 T3 出發"},
+        {no:"JL740", route:"DEL → 東京成田 NRT（3 位）", time:"04:35–15:40", term:"德里 T3 出發・成田 T2 抵達"}],
+      items:[
+        {t:"凌晨", x:"退房，專車送往德里機場 T3"},
+        {t:"03:30", x:"6 位搭 TG332 德里 DEL → 曼谷 BKK，09:00 抵達"},
+        {t:"04:35", x:"Bevis、許yu、阿魁 3 位搭 JL740 德里 DEL → 東京成田 NRT，15:40 抵達成田第二航廈（T2）"},
+        {warn:1, t:"09:00", x:"6 位在曼谷轉機，曼谷 → 台北班機尚未決定，可選班機如下（轉機時間以 09:00 抵達計算）"},
+        {t:"12:40", x:"TG634　12:40–17:20　轉機 3 小時 40 分　桃園 T1 抵達（參考）"},
+        {t:"12:45", x:"BR212　12:45–17:15　轉機 3 小時 45 分　桃園 T2 抵達（參考）"},
+        {t:"14:05", x:"CI832　14:05–18:40　轉機 5 小時 5 分　桃園 T1 抵達（參考）"},
+        {t:"14:35", x:"BR203　14:35–19:15　轉機 5 小時 35 分　桃園 T2 抵達（參考）"},
+        {t:"17:15", x:"BR68　17:15–21:50　轉機 8 小時 15 分　桃園 T2 抵達（參考）"},
+        {t:"17:30", x:"TG636　17:30–22:20　轉機 8 小時 30 分　桃園 T1 抵達（參考）"},
+        {t:"17:50", x:"CI836　17:50–22:25　轉機 8 小時 50 分　桃園 T1 抵達（參考）"},
+        {t:"11/15", x:"CI838　02:35–07:15　隔天凌晨起飛，轉機 17 小時 35 分　桃園 T1 抵達（參考）"}] }
   ];
 
   var GROUPS = [
@@ -356,7 +372,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 
   function flightsHTML(d){
     return (d.flights||[]).map(function(f){
-      return '<div class="flight">'+PLANE+'<span>'+f.no+'　'+f.route+(f.time?'　'+f.time:'')+'</span></div>';
+      return '<div class="flight">'+PLANE+'<span>'+f.no+'　'+f.route+(f.time?'　'+f.time:'')+(f.term?'<span class="term">'+f.term+'</span>':'')+'</span></div>';
     }).join("");
   }
   function itemsHTML(items){
@@ -446,12 +462,14 @@ button{font:inherit;color:inherit;cursor:pointer}
   function kv(a,b){ return '<div class="row kv"><span>'+a+'</span><b>'+b+'</b></div>'; }
   function renderInfo(){
     var flights = [
-      ["11/4","CI837","台北 TPE → 曼谷 BKK　22:30–01:35 (+1)"],
-      ["11/5","TG323","曼谷 BKK → 德里 DEL　07:00–09:55"],
+      ["11/4","CI837","台北 TPE → 曼谷 BKK　22:30–01:35 (+1)<br>桃園第一航廈 T1 出發"],
+      ["11/5","TG323","曼谷 BKK → 德里 DEL　07:00–09:55<br>德里 T3 抵達"],
       ["11/8","BKK → JAI","Charlie 夫婦 05:35–13:45"],
-      ["11/11","6E2423","德里 DEL → 瓦拉納西 VNS　15:15–16:40"],
-      ["11/13","AI2568","瓦拉納西 VNS → 德里 DEL　16:30–18:10"],
-      ["11/14","回程","航班資訊尚未填入"]
+      ["11/11","6E2423","德里 DEL → 瓦拉納西 VNS　15:15–16:40<br>德里 T2 出發"],
+      ["11/13","AI2568","瓦拉納西 VNS → 德里 DEL　16:30–18:10<br>德里 T3 抵達"],
+      ["11/14","TG332","德里 DEL → 曼谷 BKK　03:30–09:00（6 位）<br>德里 T3 出發"],
+      ["11/14","JL740","德里 DEL → 東京成田 NRT　04:35–15:40（Bevis、許yu、阿魁）<br>德里 T3 出發・成田 T2 抵達"],
+      ["11/14","曼谷 → 台北","6 位，班機尚未決定，可選：<br>TG634 12:40–17:20（桃園 T1・參考）<br>BR212 12:45–17:15（桃園 T2・參考）<br>CI832 14:05–18:40（桃園 T1・參考）<br>BR203 14:35–19:15（桃園 T2・參考）<br>BR68 17:15–21:50（桃園 T2・參考）<br>TG636 17:30–22:20（桃園 T1・參考）<br>CI836 17:50–22:25（桃園 T1・參考）<br>11/15 CI838 02:35–07:15（桃園 T1・參考）"]
     ];
     var hotels = [
       ["11/5","Aloft by Marriott New Delhi Aerocity","德里・2 晚・含早餐","₹102,748.50"],
@@ -470,6 +488,15 @@ button{font:inherit;color:inherit;cursor:pointer}
     h += '<div class="grp"><strong>航班</strong></div><div class="rows">'+flights.map(function(f){
       return '<div class="row srow"><div class="date">'+f[0]+'</div><div><div class="name">'+f[1]+'</div><div class="sub">'+f[2]+'</div></div></div>';
     }).join("")+'</div>';
+    h += '<p class="note">航廈依機場與航空公司公告整理，航廈會調整，出發前一天請用航空公司 App 再確認。曼谷到台北的桃園抵達航廈為參考，選定班機後再核對。</p>';
+    h += '<div class="grp"><strong>機票費用</strong><span>ZED 票</span></div><div class="rows">'+
+      kv("台北 → 曼谷（11/4 CI837）","<span class=\"amt\">NT$2,079</span>")+
+      kv("曼谷 → 德里（11/5 TG323）","<span class=\"amt\">NT$4,544</span>")+
+      kv("曼谷 → 台北（班機待定）","<span class=\"amt\">NT$2,410</span>")+
+    '</div>';
+    h += '<div class="grp"><strong>保險</strong><span>Elma</span></div><div class="rows">'+
+      kv("Elma 的保險（新安東京）","<span class=\"amt\">NT$1,595</span>")+
+    '</div>';
     h += '<div class="grp"><strong>住宿</strong><span>10 天 9 夜</span></div><div class="rows">'+hotels.map(function(x){
       return '<div class="row srow"><div class="date">'+x[0]+'</div><div><div class="name" style="font-size:16px">'+x[1]+'</div><div class="sub">'+x[2]+'</div><div class="amt" style="margin-top:4px">'+x[3]+'</div></div></div>';
     }).join("")+'</div><p class="note">住宿金額為 7 人配置的房費，日期為入住日。</p>';
